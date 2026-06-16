@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/*.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/participants(.*)", "dest": "/api/participants.js" },
+    { "src": "/api/questions(.*)", "dest": "/api/questions.js" },
+    { "src": "/api/answers(.*)", "dest": "/api/answers.js" },
+    { "src": "/api/dashboard(.*)", "dest": "/api/dashboard.js" }
+  ]
+}

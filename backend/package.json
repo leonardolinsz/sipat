@@ -1,0 +1,17 @@
+{
+  "name": "sipat-quiz-api",
+  "version": "1.0.0",
+  "description": "API backend para o Quiz SIPAT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@vercel/node": "^3.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.18.2",
+    "pg": "^8.11.3"
+  }
+}
