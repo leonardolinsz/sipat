@@ -1,74 +1,18 @@
 export const QUESTIONS = [
-  {
-    id: 1,
-    ordem: 1,
-    enunciado: 'Qual é a atitude mais segura ao identificar um risco no ambiente de trabalho?',
-    alternativa_a: 'Ignorar, pois não é sua função',
-    alternativa_b: 'Comunicar imediatamente e sinalizar o local',
-    alternativa_c: 'Resolver sozinho sem avisar ninguém',
-    alternativa_d: 'Esperar alguém perceber',
-    resposta_correta: 'B',
-    explicacao: 'Comunicar e sinalizar imediatamente é a atitude correta. Todo colaborador tem responsabilidade pela segurança coletiva.'
-  },
-  {
-    id: 2,
-    ordem: 2,
-    enunciado: 'O uso de EPI deve ser feito quando?',
-    alternativa_a: 'Apenas quando tem fiscalização',
-    alternativa_b: 'Somente em atividades de alto risco',
-    alternativa_c: 'Sempre que a atividade exigir',
-    alternativa_d: 'Quando o colaborador achar necessário',
-    resposta_correta: 'C',
-    explicacao: 'O EPI deve ser usado sempre que a atividade exigir, independente de fiscalização ou percepção pessoal de risco.'
-  },
-  {
-    id: 3,
-    ordem: 3,
-    enunciado: 'Trabalhar em equipe contribui para a segurança porque:',
-    alternativa_a: 'Divide tarefas e reduz erros',
-    alternativa_b: 'Diminui a responsabilidade individual',
-    alternativa_c: 'Aumenta o tempo da atividade',
-    alternativa_d: 'Evita o uso de procedimentos',
-    resposta_correta: 'A',
-    explicacao: 'A colaboração em equipe distribui responsabilidades, aumenta a atenção e reduz a chance de erros e acidentes.'
-  },
-  {
-    id: 4,
-    ordem: 4,
-    enunciado: 'Antes de iniciar qualquer atividade, o mais importante é:',
-    alternativa_a: 'Começar rápido para ganhar tempo',
-    alternativa_b: 'Ver se alguém já fez antes',
-    alternativa_c: 'Avaliar riscos e planejar',
-    alternativa_d: 'Pedir ajuda só depois de errar',
-    resposta_correta: 'C',
-    explicacao: 'Avaliar riscos e planejar antes de iniciar qualquer atividade é fundamental para prevenir acidentes.'
-  },
-  {
-    id: 5,
-    ordem: 5,
-    enunciado: 'O que fazer ao presenciar um colega em situação de risco?',
-    alternativa_a: 'Ignorar para evitar conflito',
-    alternativa_b: 'Registrar depois',
-    alternativa_c: 'Alertar e orientar com respeito',
-    alternativa_d: 'Esperar o gestor resolver',
-    resposta_correta: 'C',
-    explicacao: 'Alertar e orientar com respeito demonstra cuidado com o próximo e fortalece a cultura de segurança no trabalho.'
-  }
+  { id: 1, ordem: 1, enunciado: 'Qual é o principal objetivo da CIPA?', alternativa_a: 'Fiscalizar os funcionários', alternativa_b: 'Promover a prevenção de acidentes e doenças relacionadas ao trabalho', alternativa_c: 'Aplicar advertências', alternativa_d: 'Controlar o horário dos funcionários', resposta_correta: 'B', explicacao: 'A CIPA promove a prevenção de acidentes e doenças relacionadas ao trabalho.' },
+  { id: 2, ordem: 2, enunciado: 'Qual atitude ajuda na prevenção de acidentes?', alternativa_a: 'Deixar objetos espalhados', alternativa_b: 'Ignorar pequenas situações de risco', alternativa_c: 'Manter o ambiente organizado e comunicar condições inseguras', alternativa_d: 'Fazer atividades com pressa', resposta_correta: 'C', explicacao: 'Organização e comunicação de condições inseguras ajudam a prevenir acidentes.' },
+  { id: 3, ordem: 3, enunciado: 'Sobre ergonomia, qual atitude é adequada?', alternativa_a: 'Permanecer na mesma posição durante todo o expediente', alternativa_b: 'Ajustar cadeira e monitor de forma adequada', alternativa_c: 'Trabalhar sempre com o monitor muito baixo', alternativa_d: 'Evitar pausas durante o trabalho', resposta_correta: 'B', explicacao: 'Ajustar cadeira e monitor adequadamente contribui para a ergonomia.' },
+  { id: 4, ordem: 4, enunciado: 'Um colaborador percebe que uma tomada está aquecendo e apresenta sinais de dano. Qual a atitude mais segura?', alternativa_a: 'Continuar utilizando até parar de funcionar', alternativa_b: 'Colocar fita adesiva e continuar usando', alternativa_c: 'Comunicar o problema e evitar a utilização até avaliação adequada', alternativa_d: 'Tentar desmontar a tomada', resposta_correta: 'C', explicacao: 'O problema deve ser comunicado e a tomada não deve ser usada até avaliação adequada.' },
+  { id: 5, ordem: 5, enunciado: 'Durante uma evacuação de emergência, o correto é:', alternativa_a: 'Correr e empurrar as pessoas', alternativa_b: 'Voltar para buscar objetos pessoais', alternativa_c: 'Seguir as orientações e utilizar as rotas de saída indicadas', alternativa_d: 'Utilizar qualquer elevador disponível', resposta_correta: 'C', explicacao: 'Siga as orientações e use as rotas de saída indicadas.' },
+  { id: 6, ordem: 6, enunciado: 'Qual é a diferença entre acidente e incidente?', alternativa_a: 'Não existe diferença', alternativa_b: 'Incidente é sempre mais grave que acidente', alternativa_c: 'Acidente pode causar dano; incidente é uma ocorrência que poderia ter causado dano, mas não causou', alternativa_d: 'Incidente acontece somente fora do trabalho', resposta_correta: 'C', explicacao: 'O acidente pode causar dano; o incidente poderia ter causado dano, mas não causou.' },
+  { id: 7, ordem: 7, enunciado: 'Um piso molhado sem sinalização pode causar:', alternativa_a: 'Queda e lesões', alternativa_b: 'Problemas elétricos', alternativa_c: 'Doenças respiratórias', alternativa_d: 'Problemas de visão', resposta_correta: 'A', explicacao: 'Pisos molhados sem sinalização podem causar quedas e lesões.' },
+  { id: 8, ordem: 8, enunciado: 'Qual atitude contribui para um ambiente de trabalho seguro?', alternativa_a: 'Manter materiais espalhados', alternativa_b: 'Deixar objetos nas áreas de circulação', alternativa_c: 'Manter o ambiente organizado e livre de obstáculos', alternativa_d: 'Ignorar pequenas situações de risco', resposta_correta: 'C', explicacao: 'Manter o ambiente organizado e livre de obstáculos contribui para a segurança.' },
+  { id: 9, ordem: 9, enunciado: 'A prevenção de assédio e violência no trabalho também está relacionada à atuação da CIPA. Qual atitude contribui para um ambiente saudável?', alternativa_a: 'Fazer comentários constrangedores como brincadeira', alternativa_b: 'Ignorar situações inadequadas', alternativa_c: 'Respeitar os colegas e comunicar situações de assédio ou violência pelos canais apropriados', alternativa_d: 'Compartilhar situações pessoais dos colegas', resposta_correta: 'C', explicacao: 'Respeite os colegas e comunique situações de assédio ou violência pelos canais apropriados.' },
+  { id: 10, ordem: 10, enunciado: 'Um colaborador percebe que um colega está sendo constantemente alvo de comentários constrangedores. O que deve fazer?', alternativa_a: 'Participar para não criar conflito', alternativa_b: 'Ignorar', alternativa_c: 'Buscar orientação e comunicar a situação pelos canais apropriados', alternativa_d: 'Compartilhar a situação com outros colegas', resposta_correta: 'C', explicacao: 'Busque orientação e comunique a situação pelos canais apropriados.' }
 ];
 
 export const SETORES = [
-  'Administrativo',
-  'Almoxarifado',
-  'Comercial',
-  'Engenharia',
-  'Financeiro',
-  'Logística',
-  'Manutenção',
-  'Operações',
-  'Produção',
-  'Qualidade',
-  'RH',
-  'Segurança do Trabalho',
-  'TI',
-  'Outro'
+  'Administrativo', 'Almoxarifado', 'Comercial', 'Engenharia', 'Financeiro',
+  'Logística', 'Manutenção', 'Operações', 'Produção', 'Qualidade', 'RH',
+  'Segurança do Trabalho', 'TI', 'Outro'
 ];

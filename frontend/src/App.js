@@ -3,20 +3,41 @@ import './index.css';
 import WelcomeScreen from './components/WelcomeScreen';
 import QuestionCard from './components/QuestionCard';
 import ResultScreen from './components/ResultScreen';
+import BrandLogo from './components/BrandLogo';
 import Dashboard from './pages/Dashboard';
 import { api } from './api';
 import { QUESTIONS } from './data';
 
 const SCREENS = { WELCOME: 'welcome', QUIZ: 'quiz', RESULT: 'result', DASHBOARD: 'dashboard' };
+const COMPLETED_QUIZ_PREFIX = 'sipat:completed-quiz:';
+const COMPLETED_QUIZ_RESULT_KEY = 'sipat:completed-quiz-result';
+
+const normalizeParticipantValue = value => value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('pt-BR');
+const getCompletedQuizKey = (nome, setor) => `${COMPLETED_QUIZ_PREFIX}${encodeURIComponent(normalizeParticipantValue(nome))}:${encodeURIComponent(normalizeParticipantValue(setor))}`;
+
+const getCompletedQuiz = () => {
+  try {
+    const storedQuiz = window.sessionStorage.getItem(COMPLETED_QUIZ_RESULT_KEY);
+    if (!storedQuiz) return null;
+
+    const completedQuiz = JSON.parse(storedQuiz);
+    if (!completedQuiz?.completedQuizKey || !completedQuiz?.participant || !completedQuiz?.results) return null;
+    return completedQuiz;
+  } catch (_) {
+    return null;
+  }
+};
 
 export default function App() {
-  const [screen, setScreen] = useState(SCREENS.WELCOME);
-  const [participant, setParticipant] = useState(null);
+  const [completedQuiz, setCompletedQuiz] = useState(getCompletedQuiz);
+  const [screen, setScreen] = useState(() => getCompletedQuiz() ? SCREENS.RESULT : SCREENS.WELCOME);
+  const [participant, setParticipant] = useState(() => getCompletedQuiz()?.participant || null);
   const [questions, setQuestions] = useState(QUESTIONS);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [pendingAnswer, setPendingAnswer] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [startError, setStartError] = useState('');
 
   // Verificar rota oculta
   useEffect(() => {
@@ -24,7 +45,7 @@ export default function App() {
       if (window.location.hash === '#/vanessa-admin') {
         setScreen(SCREENS.DASHBOARD);
       } else if (window.location.hash === '') {
-        setScreen(SCREENS.WELCOME);
+        setScreen(getCompletedQuiz() ? SCREENS.RESULT : SCREENS.WELCOME);
       }
     };
     
@@ -34,6 +55,13 @@ export default function App() {
   }, []);
 
   const handleStart = async (nome, setor) => {
+    const completedQuizKey = getCompletedQuizKey(nome, setor);
+    if (window.sessionStorage.getItem(completedQuizKey)) {
+      setStartError('Este usuário já concluiu o quiz nesta sessão do navegador. Cada usuário pode jogar apenas uma vez por sessão.');
+      return;
+    }
+
+    setStartError('');
     setLoading(true);
     try {
       let qs = QUESTIONS;
@@ -42,9 +70,9 @@ export default function App() {
         if (!qs || qs.length === 0) qs = QUESTIONS;
       } catch (_) { /* use local fallback */ }
 
-      let p = { id: null, nome, setor };
+      let p = { id: null, nome, setor, completedQuizKey };
       try {
-        p = await api.createParticipant(nome, setor);
+        p = { ...(await api.createParticipant(nome, setor)), completedQuizKey };
       } catch (_) { /* continue without API */ }
 
       setQuestions(qs);
@@ -66,6 +94,11 @@ export default function App() {
         if (participant?.id) {
           try { await api.finalizeParticipant(participant.id); } catch (_) {}
         }
+        const results = computeResults();
+        const completedQuiz = { participant, results, completedQuizKey: participant?.completedQuizKey };
+        if (participant?.completedQuizKey) window.sessionStorage.setItem(participant.completedQuizKey, 'true');
+        window.sessionStorage.setItem(COMPLETED_QUIZ_RESULT_KEY, JSON.stringify(completedQuiz));
+        setCompletedQuiz(completedQuiz);
         setScreen(SCREENS.RESULT);
       } else {
         setCurrentIndex(next);
@@ -97,7 +130,7 @@ export default function App() {
         });
       } catch (_) {}
     }
-  }, [currentIndex, questions, participant]);
+  }, [currentIndex, questions, participant, answers]);
 
   const computeResults = () => {
     const acertos = answers.filter(a => a.correta).length;
@@ -106,18 +139,10 @@ export default function App() {
     return { acertos, erros, naoRespondidas, total: questions.length };
   };
 
-  const handleRestart = () => {
-    setParticipant(null);
-    setAnswers([]);
-    setCurrentIndex(0);
-    setPendingAnswer(null);
-    setScreen(SCREENS.WELCOME);
-  };
-
   return (
     <>
       {screen === SCREENS.WELCOME && (
-        <WelcomeScreen onStart={handleStart} loading={loading} />
+        <WelcomeScreen onStart={handleStart} loading={loading} startError={startError} />
       )}
 
       {screen === SCREENS.QUIZ && questions[currentIndex] && (
@@ -133,10 +158,9 @@ export default function App() {
 
       {screen === SCREENS.RESULT && (
         <ResultScreen
-          results={computeResults()}
-          participantName={participant?.nome || ''}
-          setor={participant?.setor || ''}
-          onRestart={handleRestart}
+          results={completedQuiz?.results || computeResults()}
+          participantName={completedQuiz?.participant?.nome || participant?.nome || ''}
+          setor={completedQuiz?.participant?.setor || participant?.setor || ''}
         />
       )}
 
@@ -148,7 +172,7 @@ export default function App() {
           >
             ← Voltar
           </button>
-          <Dashboard />
+          <Dashboard BrandLogo={BrandLogo} />
         </>
       )}
     </>
@@ -158,7 +182,7 @@ export default function App() {
 const styles = {
   backBtn: {
     position: 'fixed', top: 16, left: 16, zIndex: 200,
-    background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)',
+    background: 'rgba(15,94,65,0.9)', backdropFilter: 'blur(8px)',
     color: '#fff', border: '1.5px solid rgba(255,255,255,0.3)',
     borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 600,
     cursor: 'pointer', transition: 'all 0.2s'

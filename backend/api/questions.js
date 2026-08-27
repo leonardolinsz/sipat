@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
   if (req.method === 'GET') {
     try {
       const result = await pool.query(
-        'SELECT id, ordem, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, resposta_correta, explicacao FROM questions ORDER BY ordem'
+        'SELECT id, ordem, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, resposta_correta, explicacao FROM questions WHERE ativo = TRUE ORDER BY ordem'
       );
       return res.status(200).json(result.rows);
     } catch (err) {

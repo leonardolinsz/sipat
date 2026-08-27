@@ -5,9 +5,9 @@ import {
 } from 'recharts';
 import { api } from '../api';
 
-const COLORS_PIE = ['#16A34A', '#EF4444', '#EAB308'];
+const COLORS_PIE = ['#169B62', '#D14343', '#D58A00'];
 
-export default function Dashboard() {
+export default function Dashboard({ BrandLogo }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,12 +36,12 @@ export default function Dashboard() {
 
   if (error) return (
     <div style={styles.loadingPage}>
-      <div style={{ fontSize: 48 }}>⚠️</div>
       <div style={{ color: '#fff', marginTop: 16, fontSize: 15, textAlign: 'center', maxWidth: 340 }}>{error}</div>
     </div>
   );
 
   const t = data?.totais || {};
+  const totalQuestions = data?.por_pergunta?.length || 0;
   const taxaConclusao = t.total_participantes > 0
     ? Math.round((t.total_concluidos / t.total_participantes) * 100)
     : 0;
@@ -73,16 +73,16 @@ export default function Dashboard() {
         {/* Header */}
         <div style={styles.header}>
           <div>
-            <div style={styles.headerBadge}>📊 Dashboard Administrativo</div>
-            <h1 style={styles.headerTitle}>Quiz SIPAT 2025</h1>
-            <div style={styles.headerSub}>Integrar para Prevenir · Um time, uma cultura de segurança</div>
+            <div style={styles.headerBadge}>Dashboard administrativo</div>
+            <h1 style={styles.headerTitle}>Blitz da CIPAA</h1>
+            <div style={styles.headerSub}>CIPAA 2026 · Segurança, saúde e respeito no trabalho</div>
           </div>
-          <div style={styles.headerIcons}>⛑️ 🛡️</div>
+          <BrandLogo className="dashboard-logo" />
         </div>
 
         {/* Filter */}
         <div style={styles.filterBar}>
-          <label style={styles.filterLabel}>🏢 Filtrar por setor:</label>
+          <label style={styles.filterLabel}>Filtrar por setor:</label>
           <select
             style={styles.filterSelect}
             value={sectorFilter}
@@ -91,24 +91,24 @@ export default function Dashboard() {
             <option value="">Todos os setores</option>
             {(data?.setores || []).map(s => <option key={s} value={s}>{s}</option>)}
           </select>
-          <button style={styles.refreshBtn} onClick={() => load(sectorFilter)}>🔄 Atualizar</button>
+          <button style={styles.refreshBtn} onClick={() => load(sectorFilter)}>Atualizar</button>
         </div>
 
         {/* KPI Cards */}
         <div style={styles.kpiGrid}>
-          <KpiCard icon="👥" label="Total de Participantes" value={t.total_participantes || 0} color="#1B4FBA" bg="#EEF4FF" border="#DBEAFE" />
-          <KpiCard icon="✅" label="Quizzes Concluídos" value={t.total_concluidos || 0} color="#16A34A" bg="#ECFDF3" border="#D1FAE5" />
-          <KpiCard icon="📈" label="Taxa de Conclusão" value={`${taxaConclusao}%`} color="#CA8A04" bg="#FEFCE8" border="#FEF9C3" />
-          <KpiCard icon="🎯" label="Média de Acertos" value={`${parseFloat(t.media_acertos || 0).toFixed(1)}/5`} color="#1B4FBA" bg="#EEF4FF" border="#DBEAFE" />
-          <KpiCard icon="❌" label="Média de Erros" value={`${parseFloat(t.media_erros || 0).toFixed(1)}/5`} color="#DC2626" bg="#FEF2F2" border="#FEE2E2" />
-          <KpiCard icon="⏱️" label="Tempo Médio/Pergunta" value={data?.tempo_medio ? `${data.tempo_medio}s` : '--'} color="#7C3AED" bg="#F5F3FF" border="#EDE9FE" />
+          <KpiCard label="Participantes" value={t.total_participantes || 0} color="#0F5E41" bg="#F0F6EE" border="#D4E6D6" />
+          <KpiCard label="Quizzes concluídos" value={t.total_concluidos || 0} color="#169B62" bg="#E8F6EE" border="#B9E0C9" />
+          <KpiCard label="Taxa de conclusão" value={`${taxaConclusao}%`} color="#A86A00" bg="#FFF7DF" border="#F1D78D" />
+          <KpiCard label="Média de acertos" value={`${parseFloat(t.media_acertos || 0).toFixed(1)}/${totalQuestions}`} color="#0F5E41" bg="#F0F6EE" border="#D4E6D6" />
+          <KpiCard label="Média de erros" value={`${parseFloat(t.media_erros || 0).toFixed(1)}/${totalQuestions}`} color="#D14343" bg="#FFF0F0" border="#F3C3C3" />
+          <KpiCard label="Tempo médio/pergunta" value={data?.tempo_medio ? `${data.tempo_medio}s` : '--'} color="#4B5D50" bg="#F4F6F3" border="#DDE5DC" />
         </div>
 
         {/* Charts row */}
         <div style={styles.chartsRow}>
           {/* Pie */}
           <div style={styles.chartCard}>
-            <div style={styles.chartTitle}>📊 Distribuição Média de Respostas</div>
+            <div style={styles.chartTitle}>Distribuição média de respostas</div>
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
                 <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value">
@@ -122,7 +122,7 @@ export default function Dashboard() {
 
           {/* Bar - per question */}
           <div style={{ ...styles.chartCard, flex: 2 }}>
-            <div style={styles.chartTitle}>📋 Desempenho por Pergunta</div>
+            <div style={styles.chartTitle}>Desempenho por pergunta</div>
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={perPerguntaData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
@@ -132,9 +132,9 @@ export default function Dashboard() {
                   labelFormatter={(_, payload) => payload?.[0]?.payload?.fullName || ''}
                   formatter={(v, name) => [v, name]}
                 />
-                <Bar dataKey="acertos" fill="#16A34A" radius={[4, 4, 0, 0]} name="Acertos" />
-                <Bar dataKey="erros" fill="#EF4444" radius={[4, 4, 0, 0]} name="Erros" />
-                <Bar dataKey="Não resp." fill="#EAB308" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="acertos" fill="#169B62" radius={[4, 4, 0, 0]} name="Acertos" />
+                <Bar dataKey="erros" fill="#D14343" radius={[4, 4, 0, 0]} name="Erros" />
+                <Bar dataKey="Não resp." fill="#D58A00" radius={[4, 4, 0, 0]} />
                 <Legend />
               </BarChart>
             </ResponsiveContainer>
@@ -144,17 +144,17 @@ export default function Dashboard() {
         {/* Sector ranking */}
         {setorData.length > 0 && (
           <div style={styles.chartCard}>
-            <div style={styles.chartTitle}>🏆 Ranking de Setores por Acertos</div>
+            <div style={styles.chartTitle}>Ranking de setores por acertos</div>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={setorData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" horizontal={false} />
-                <XAxis type="number" domain={[0, 5]} tick={{ fontSize: 12, fill: '#64748B' }} />
+                <XAxis type="number" domain={[0, Math.max(totalQuestions, 1)]} tick={{ fontSize: 12, fill: '#64748B' }} />
                 <YAxis dataKey="setor" type="category" tick={{ fontSize: 11, fill: '#334155' }} width={80} />
                 <Tooltip
                   labelFormatter={(_, p) => p?.[0]?.payload?.fullSetor || ''}
                   formatter={(v) => [v.toFixed(1), 'Média de acertos']}
                 />
-                <Bar dataKey="Média Acertos" fill="#1B4FBA" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="Média Acertos" fill="#169B62" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -163,7 +163,7 @@ export default function Dashboard() {
         {/* Error table */}
         {data?.por_pergunta?.length > 0 && (
           <div style={styles.chartCard}>
-            <div style={styles.chartTitle}>⚠️ Perguntas com Maior Índice de Erro</div>
+            <div style={styles.chartTitle}>Perguntas com maior índice de erro</div>
             <div style={{ overflowX: 'auto' }}>
               <table style={styles.table}>
                 <thead>
@@ -180,12 +180,12 @@ export default function Dashboard() {
                     <tr key={q.ordem} style={styles.tr}>
                       <td style={styles.td}><strong>Q{q.ordem}</strong></td>
                       <td style={{ ...styles.td, maxWidth: 280 }}>{q.enunciado}</td>
-                      <td style={{ ...styles.td, textAlign: 'center', color: '#16A34A', fontWeight: 700 }}>{q.acertos}</td>
-                      <td style={{ ...styles.td, textAlign: 'center', color: '#DC2626', fontWeight: 700 }}>{q.erros}</td>
+                      <td style={{ ...styles.td, textAlign: 'center', color: '#169B62', fontWeight: 700 }}>{q.acertos}</td>
+                      <td style={{ ...styles.td, textAlign: 'center', color: '#D14343', fontWeight: 700 }}>{q.erros}</td>
                       <td style={{ ...styles.td, textAlign: 'center' }}>
                         <span style={{
-                          background: q.taxa_erro > 50 ? '#FEF2F2' : '#ECFDF3',
-                          color: q.taxa_erro > 50 ? '#DC2626' : '#16A34A',
+                          background: q.taxa_erro > 50 ? '#FFF0F0' : '#E8F6EE',
+                          color: q.taxa_erro > 50 ? '#D14343' : '#0F5E41',
                           padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 700
                         }}>
                           {q.taxa_erro || 0}%
@@ -200,17 +200,16 @@ export default function Dashboard() {
         )}
 
         <div style={styles.footer}>
-          ⛑️ SIPAT 2025 · Sistema de Monitoramento de Segurança do Trabalho
+          Blitz da CIPAA · CIPAA 2026
         </div>
       </div>
     </div>
   );
 }
 
-function KpiCard({ icon, label, value, color, bg, border }) {
+function KpiCard({ label, value, color, bg, border }) {
   return (
     <div style={{ background: bg, border: `1.5px solid ${border}`, borderRadius: 16, padding: '20px 18px' }}>
-      <div style={{ fontSize: 28, marginBottom: 8 }}>{icon}</div>
       <div style={{ fontSize: 28, fontWeight: 800, color, lineHeight: 1 }}>{value}</div>
       <div style={{ fontSize: 12, color: '#64748B', fontWeight: 600, marginTop: 6 }}>{label}</div>
     </div>
@@ -231,20 +230,20 @@ const styles = {
   header: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
     background: '#fff', borderRadius: 20, padding: '28px 32px', marginBottom: 20,
-    boxShadow: '0 4px 20px rgba(7,26,74,0.18)'
+    boxShadow: '0 4px 20px rgba(15,94,65,0.14)'
   },
   headerBadge: {
-    fontSize: 11, fontWeight: 700, color: '#1B4FBA', textTransform: 'uppercase',
-    letterSpacing: '1px', background: '#EEF4FF', padding: '4px 12px',
-    borderRadius: 20, border: '1px solid #DBEAFE', display: 'inline-block', marginBottom: 10
+    fontSize: 11, fontWeight: 700, color: '#0F5E41', textTransform: 'uppercase',
+    letterSpacing: '1px', background: '#E8F6EE', padding: '4px 12px',
+    borderRadius: 20, border: '1px solid #B9E0C9', display: 'inline-block', marginBottom: 10
   },
-  headerTitle: { fontSize: 28, fontWeight: 800, color: '#071A4A', marginBottom: 4 },
+  headerTitle: { fontSize: 28, fontWeight: 800, color: '#102219', marginBottom: 4 },
   headerSub: { fontSize: 13, color: '#64748B', fontWeight: 500 },
-  headerIcons: { fontSize: 40 },
+  headerBrand: { width: 48, height: 48, borderRadius: '50%', background: '#0F5E41', color: '#C5F25A', display: 'grid', placeItems: 'center', fontSize: 24, fontWeight: 800 },
   filterBar: {
     display: 'flex', alignItems: 'center', gap: 12, background: '#fff',
     borderRadius: 14, padding: '16px 20px', marginBottom: 20,
-    boxShadow: '0 2px 10px rgba(7,26,74,0.10)', flexWrap: 'wrap'
+    boxShadow: '0 2px 10px rgba(15,94,65,0.10)', flexWrap: 'wrap'
   },
   filterLabel: { fontSize: 13, fontWeight: 700, color: '#334155' },
   filterSelect: {
@@ -252,7 +251,7 @@ const styles = {
     fontSize: 14, color: '#1E293B', background: '#F8FAFC', cursor: 'pointer'
   },
   refreshBtn: {
-    background: '#EEF4FF', color: '#1B4FBA', border: '1.5px solid #DBEAFE',
+    background: '#E8F6EE', color: '#0F5E41', border: '1.5px solid #B9E0C9',
     borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer'
   },
   kpiGrid: {
@@ -262,7 +261,7 @@ const styles = {
   chartsRow: { display: 'flex', gap: 16, marginBottom: 28, flexWrap: 'wrap' },
   chartCard: {
     background: '#fff', borderRadius: 16, padding: '24px 20px', flex: 1, minWidth: 280,
-    boxShadow: '0 2px 12px rgba(7,26,74,0.10)', marginBottom: 28
+    boxShadow: '0 2px 12px rgba(15,94,65,0.10)', marginBottom: 28
   },
   chartTitle: { fontSize: 14, fontWeight: 700, color: '#071A4A', marginBottom: 18 },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },

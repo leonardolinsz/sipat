@@ -9,7 +9,8 @@ module.exports = async (req, res) => {
   if (req.method === 'GET') {
     const { setor } = req.query;
     try {
-      const sectorFilter = setor ? `AND p.setor = '${setor}'` : '';
+      const sectorFilter = setor ? 'AND p.setor = $1' : '';
+      const params = setor ? [setor] : [];
 
       const [totais, porSetor, porPergunta, tempoMedio, setores] = await Promise.all([
         pool.query(`
@@ -26,10 +27,11 @@ module.exports = async (req, res) => {
               SUM(CASE WHEN NOT a.correta AND NOT a.tempo_esgotado THEN 1 ELSE 0 END) AS erros,
               SUM(CASE WHEN a.tempo_esgotado THEN 1 ELSE 0 END) AS nao_respondidas
             FROM answers a
+            JOIN questions q ON q.id = a.question_id AND q.ativo = TRUE
             GROUP BY a.participant_id
           ) sub ON sub.participant_id = p.id
           WHERE 1=1 ${sectorFilter}
-        `),
+        `, params),
 
         pool.query(`
           SELECT
@@ -40,11 +42,14 @@ module.exports = async (req, res) => {
           LEFT JOIN (
             SELECT participant_id,
               SUM(CASE WHEN correta THEN 1 ELSE 0 END) AS acertos
-            FROM answers GROUP BY participant_id
+            FROM answers a
+            JOIN questions q ON q.id = a.question_id AND q.ativo = TRUE
+            GROUP BY participant_id
           ) sub ON sub.participant_id = p.id
+          WHERE 1=1 ${sectorFilter}
           GROUP BY p.setor
           ORDER BY media_acertos DESC NULLS LAST
-        `),
+        `, params),
 
         pool.query(`
           SELECT
@@ -58,17 +63,18 @@ module.exports = async (req, res) => {
           FROM questions q
           LEFT JOIN answers a ON a.question_id = q.id
           LEFT JOIN participants p ON p.id = a.participant_id
-          WHERE 1=1 ${sectorFilter.replace('p.setor', 'p.setor')}
+          WHERE q.ativo = TRUE ${sectorFilter}
           GROUP BY q.id, q.ordem, q.enunciado
           ORDER BY q.ordem
-        `),
+        `, params),
 
         pool.query(`
           SELECT ROUND(AVG(a.tempo_resposta_segundos)::numeric, 1) AS tempo_medio
           FROM answers a
+          JOIN questions q ON q.id = a.question_id AND q.ativo = TRUE
           LEFT JOIN participants p ON p.id = a.participant_id
           WHERE a.tempo_resposta_segundos IS NOT NULL ${sectorFilter}
-        `),
+        `, params),
 
         pool.query(`SELECT DISTINCT setor FROM participants ORDER BY setor`)
       ]);

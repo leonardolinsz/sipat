@@ -1,6 +1,4 @@
--- SIPAT Quiz - PostgreSQL Schema
--- Compatible with Neon, Supabase, or any hosted PostgreSQL
-
+-- Blitz da CIPAA - PostgreSQL Schema
 CREATE TABLE IF NOT EXISTS questions (
   id SERIAL PRIMARY KEY,
   ordem INTEGER NOT NULL,
@@ -15,69 +13,41 @@ CREATE TABLE IF NOT EXISTS questions (
 );
 
 CREATE TABLE IF NOT EXISTS participants (
-  id SERIAL PRIMARY KEY,
-  nome VARCHAR(150) NOT NULL,
-  setor VARCHAR(100) NOT NULL,
-  iniciado_em TIMESTAMP DEFAULT NOW(),
-  finalizado_em TIMESTAMP,
-  concluido BOOLEAN DEFAULT FALSE
+  id SERIAL PRIMARY KEY, nome VARCHAR(150) NOT NULL, setor VARCHAR(100) NOT NULL,
+  iniciado_em TIMESTAMP DEFAULT NOW(), finalizado_em TIMESTAMP, concluido BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS answers (
-  id SERIAL PRIMARY KEY,
-  participant_id INTEGER REFERENCES participants(id) ON DELETE CASCADE,
-  question_id INTEGER REFERENCES questions(id),
-  resposta_dada CHAR(1) CHECK (resposta_dada IN ('A','B','C','D')),
-  correta BOOLEAN,
-  tempo_esgotado BOOLEAN DEFAULT FALSE,
-  tempo_resposta_segundos INTEGER,
+  id SERIAL PRIMARY KEY, participant_id INTEGER REFERENCES participants(id) ON DELETE CASCADE,
+  question_id INTEGER REFERENCES questions(id), resposta_dada CHAR(1) CHECK (resposta_dada IN ('A','B','C','D')),
+  correta BOOLEAN, tempo_esgotado BOOLEAN DEFAULT FALSE, tempo_resposta_segundos INTEGER,
   respondido_em TIMESTAMP DEFAULT NOW()
 );
 
--- Seed questions from the SIPAT quiz image
-INSERT INTO questions (ordem, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, resposta_correta, explicacao) VALUES
-(1,
- 'Qual é a atitude mais segura ao identificar um risco no ambiente de trabalho?',
- 'Ignorar, pois não é sua função',
- 'Comunicar imediatamente e sinalizar o local',
- 'Resolver sozinho sem avisar ninguém',
- 'Esperar alguém perceber',
- 'B',
- 'Comunicar e sinalizar imediatamente é a atitude correta. Todo colaborador tem responsabilidade pela segurança coletiva.'
-),
-(2,
- 'O uso de EPI deve ser feito quando?',
- 'Apenas quando tem fiscalização',
- 'Somente em atividades de alto risco',
- 'Sempre que a atividade exigir',
- 'Quando o colaborador achar necessário',
- 'C',
- 'O EPI deve ser usado sempre que a atividade exigir, independente de fiscalização ou percepção pessoal de risco.'
-),
-(3,
- 'Trabalhar em equipe contribui para a segurança porque:',
- 'Divide tarefas e reduz erros',
- 'Diminui a responsabilidade individual',
- 'Aumenta o tempo da atividade',
- 'Evita o uso de procedimentos',
- 'A',
- 'A colaboração em equipe distribui responsabilidades, aumenta a atenção e reduz a chance de erros e acidentes.'
-),
-(4,
- 'Antes de iniciar qualquer atividade, o mais importante é:',
- 'Começar rápido para ganhar tempo',
- 'Ver se alguém já fez antes',
- 'Avaliar riscos e planejar',
- 'Pedir ajuda só depois de errar',
- 'C',
- 'Avaliar riscos e planejar antes de iniciar qualquer atividade é fundamental para prevenir acidentes.'
-),
-(5,
- 'O que fazer ao presenciar um colega em situação de risco?',
- 'Ignorar para evitar conflito',
- 'Registrar depois',
- 'Alertar e orientar com respeito',
- 'Esperar o gestor resolver',
- 'C',
- 'Alertar e orientar com respeito demonstra cuidado com o próximo e fortalece a cultura de segurança no trabalho.'
-);
+-- Mantém perguntas e respostas históricas fora da campanha atual, sem apagá-las.
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT TRUE;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM questions WHERE ativo AND ordem = 10) THEN
+    UPDATE questions SET ordem = ordem + 1000, ativo = FALSE
+    WHERE ativo AND ordem BETWEEN 1 AND 5;
+  END IF;
+END $$;
+
+-- Seed idempotente da Blitz da CIPAA 2026. As questões 19 e 20 do DOCX são 9 e 10 aqui.
+INSERT INTO questions (ordem, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, resposta_correta, explicacao, ativo)
+SELECT v.ordem, v.enunciado, v.alternativa_a, v.alternativa_b, v.alternativa_c, v.alternativa_d, v.resposta_correta, v.explicacao, TRUE
+FROM (VALUES
+  (1, 'Qual é o principal objetivo da CIPA?', 'Fiscalizar os funcionários', 'Promover a prevenção de acidentes e doenças relacionadas ao trabalho', 'Aplicar advertências', 'Controlar o horário dos funcionários', 'B', 'A CIPA promove a prevenção de acidentes e doenças relacionadas ao trabalho.'),
+  (2, 'Qual atitude ajuda na prevenção de acidentes?', 'Deixar objetos espalhados', 'Ignorar pequenas situações de risco', 'Manter o ambiente organizado e comunicar condições inseguras', 'Fazer atividades com pressa', 'C', 'Organização e comunicação de condições inseguras ajudam a prevenir acidentes.'),
+  (3, 'Sobre ergonomia, qual atitude é adequada?', 'Permanecer na mesma posição durante todo o expediente', 'Ajustar cadeira e monitor de forma adequada', 'Trabalhar sempre com o monitor muito baixo', 'Evitar pausas durante o trabalho', 'B', 'Ajustar cadeira e monitor adequadamente contribui para a ergonomia.'),
+  (4, 'Um colaborador percebe que uma tomada está aquecendo e apresenta sinais de dano. Qual a atitude mais segura?', 'Continuar utilizando até parar de funcionar', 'Colocar fita adesiva e continuar usando', 'Comunicar o problema e evitar a utilização até avaliação adequada', 'Tentar desmontar a tomada', 'C', 'O problema deve ser comunicado e a tomada não deve ser usada até avaliação adequada.'),
+  (5, 'Durante uma evacuação de emergência, o correto é:', 'Correr e empurrar as pessoas', 'Voltar para buscar objetos pessoais', 'Seguir as orientações e utilizar as rotas de saída indicadas', 'Utilizar qualquer elevador disponível', 'C', 'Siga as orientações e use as rotas de saída indicadas.'),
+  (6, 'Qual é a diferença entre acidente e incidente?', 'Não existe diferença', 'Incidente é sempre mais grave que acidente', 'Acidente pode causar dano; incidente é uma ocorrência que poderia ter causado dano, mas não causou', 'Incidente acontece somente fora do trabalho', 'C', 'O acidente pode causar dano; o incidente poderia ter causado dano, mas não causou.'),
+  (7, 'Um piso molhado sem sinalização pode causar:', 'Queda e lesões', 'Problemas elétricos', 'Doenças respiratórias', 'Problemas de visão', 'A', 'Pisos molhados sem sinalização podem causar quedas e lesões.'),
+  (8, 'Qual atitude contribui para um ambiente de trabalho seguro?', 'Manter materiais espalhados', 'Deixar objetos nas áreas de circulação', 'Manter o ambiente organizado e livre de obstáculos', 'Ignorar pequenas situações de risco', 'C', 'Manter o ambiente organizado e livre de obstáculos contribui para a segurança.'),
+  (9, 'A prevenção de assédio e violência no trabalho também está relacionada à atuação da CIPA. Qual atitude contribui para um ambiente saudável?', 'Fazer comentários constrangedores como brincadeira', 'Ignorar situações inadequadas', 'Respeitar os colegas e comunicar situações de assédio ou violência pelos canais apropriados', 'Compartilhar situações pessoais dos colegas', 'C', 'Respeite os colegas e comunique situações de assédio ou violência pelos canais apropriados.'),
+  (10, 'Um colaborador percebe que um colega está sendo constantemente alvo de comentários constrangedores. O que deve fazer?', 'Participar para não criar conflito', 'Ignorar', 'Buscar orientação e comunicar a situação pelos canais apropriados', 'Compartilhar a situação com outros colegas', 'C', 'Busque orientação e comunique a situação pelos canais apropriados.')
+) AS v(ordem, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, resposta_correta, explicacao)
+WHERE NOT EXISTS (SELECT 1 FROM questions q WHERE q.ativo AND q.ordem = v.ordem);

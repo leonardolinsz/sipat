@@ -1,4 +1,4 @@
-# ⛑️ Quiz SIPAT 2025 — Integrar para Prevenir
+# ⛑️ Quiz SIPAT 2026 — Integrar para Prevenir
 
 > **Um time, uma cultura de segurança**
 > Quiz interativo de segurança do trabalho com dashboard administrativo.
@@ -60,4 +60,4 @@ sipat-quiz/
 
 ---
 
-*⛑️ SIPAT 2025 — Segurança começa em cada um de nós.*
+*⛑️ SIPAT 2026 — Segurança começa em cada um de nós.*
