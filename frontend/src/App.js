@@ -9,29 +9,11 @@ import { api } from './api';
 import { QUESTIONS } from './data';
 
 const SCREENS = { WELCOME: 'welcome', QUIZ: 'quiz', RESULT: 'result', DASHBOARD: 'dashboard' };
-const COMPLETED_QUIZ_PREFIX = 'sipat:completed-quiz:';
-const COMPLETED_QUIZ_RESULT_KEY = 'sipat:completed-quiz-result';
-
-const normalizeParticipantValue = value => value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('pt-BR');
-const getCompletedQuizKey = (nome, setor) => `${COMPLETED_QUIZ_PREFIX}${encodeURIComponent(normalizeParticipantValue(nome))}:${encodeURIComponent(normalizeParticipantValue(setor))}`;
-
-const getCompletedQuiz = () => {
-  try {
-    const storedQuiz = window.sessionStorage.getItem(COMPLETED_QUIZ_RESULT_KEY);
-    if (!storedQuiz) return null;
-
-    const completedQuiz = JSON.parse(storedQuiz);
-    if (!completedQuiz?.completedQuizKey || !completedQuiz?.participant || !completedQuiz?.results) return null;
-    return completedQuiz;
-  } catch (_) {
-    return null;
-  }
-};
 
 export default function App() {
-  const [completedQuiz, setCompletedQuiz] = useState(getCompletedQuiz);
-  const [screen, setScreen] = useState(() => getCompletedQuiz() ? SCREENS.RESULT : SCREENS.WELCOME);
-  const [participant, setParticipant] = useState(() => getCompletedQuiz()?.participant || null);
+  const [completedQuiz, setCompletedQuiz] = useState(null);
+  const [screen, setScreen] = useState(SCREENS.WELCOME);
+  const [participant, setParticipant] = useState(null);
   const [questions, setQuestions] = useState(QUESTIONS);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
@@ -45,7 +27,7 @@ export default function App() {
       if (window.location.hash === '#/vanessa-admin') {
         setScreen(SCREENS.DASHBOARD);
       } else if (window.location.hash === '') {
-        setScreen(getCompletedQuiz() ? SCREENS.RESULT : SCREENS.WELCOME);
+        setScreen(SCREENS.WELCOME);
       }
     };
     
@@ -55,12 +37,6 @@ export default function App() {
   }, []);
 
   const handleStart = async (nome, setor) => {
-    const completedQuizKey = getCompletedQuizKey(nome, setor);
-    if (window.sessionStorage.getItem(completedQuizKey)) {
-      setStartError('Este usuário já concluiu o quiz nesta sessão do navegador. Cada usuário pode jogar apenas uma vez por sessão.');
-      return;
-    }
-
     setStartError('');
     setLoading(true);
     try {
@@ -70,9 +46,9 @@ export default function App() {
         if (!qs || qs.length === 0) qs = QUESTIONS;
       } catch (_) { /* use local fallback */ }
 
-      let p = { id: null, nome, setor, completedQuizKey };
+      let p = { id: null, nome, setor };
       try {
-        p = { ...(await api.createParticipant(nome, setor)), completedQuizKey };
+        p = await api.createParticipant(nome, setor);
       } catch (_) { /* continue without API */ }
 
       setQuestions(qs);
@@ -95,10 +71,7 @@ export default function App() {
           try { await api.finalizeParticipant(participant.id); } catch (_) {}
         }
         const results = computeResults();
-        const completedQuiz = { participant, results, completedQuizKey: participant?.completedQuizKey };
-        if (participant?.completedQuizKey) window.sessionStorage.setItem(participant.completedQuizKey, 'true');
-        window.sessionStorage.setItem(COMPLETED_QUIZ_RESULT_KEY, JSON.stringify(completedQuiz));
-        setCompletedQuiz(completedQuiz);
+        setCompletedQuiz({ participant, results });
         setScreen(SCREENS.RESULT);
       } else {
         setCurrentIndex(next);
@@ -132,6 +105,17 @@ export default function App() {
     }
   }, [currentIndex, questions, participant, answers]);
 
+  const handleBackToWelcome = () => {
+    setCompletedQuiz(null);
+    setParticipant(null);
+    setQuestions(QUESTIONS);
+    setCurrentIndex(0);
+    setAnswers([]);
+    setPendingAnswer(null);
+    setStartError('');
+    setScreen(SCREENS.WELCOME);
+  };
+
   const computeResults = () => {
     const acertos = answers.filter(a => a.correta).length;
     const naoRespondidas = answers.filter(a => a.tempo_esgotado).length;
@@ -161,6 +145,7 @@ export default function App() {
           results={completedQuiz?.results || computeResults()}
           participantName={completedQuiz?.participant?.nome || participant?.nome || ''}
           setor={completedQuiz?.participant?.setor || participant?.setor || ''}
+          onBackToWelcome={handleBackToWelcome}
         />
       )}
 

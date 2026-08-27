@@ -1,7 +1,7 @@
 import React from 'react';
 import BrandLogo from './BrandLogo';
 
-export default function ResultScreen({ results, participantName, setor }) {
+export default function ResultScreen({ results, participantName, setor, onBackToWelcome }) {
   const { acertos, erros, naoRespondidas, total } = results;
   const pct = total ? Math.round((acertos / total) * 100) : 0;
   const label = pct === 100 ? 'Conhecimento em dia' : pct >= 70 ? 'Bom desempenho' : 'Siga aprendendo';
@@ -16,6 +16,7 @@ export default function ResultScreen({ results, participantName, setor }) {
         <div><strong>{naoRespondidas}</strong><span>Não respondidas</span></div>
       </div>
       <div className="result-message"><strong>Segurança é responsabilidade de todos.</strong><p>Cada atitude de prevenção e respeito ajuda a tornar o ambiente de trabalho mais seguro e saudável.</p></div>
+      <button className="button button--primary result-back-button" onClick={onBackToWelcome}>Voltar ao início</button>
     </section>
   </main>;
 }
