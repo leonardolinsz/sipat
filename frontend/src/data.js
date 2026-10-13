@@ -12,7 +12,5 @@ export const QUESTIONS = [
 ];
 
 export const SETORES = [
-  'Administrativo', 'Almoxarifado', 'Comercial', 'Engenharia', 'Financeiro',
-  'Logística', 'Manutenção', 'Operações', 'Produção', 'Qualidade', 'RH',
-  'Segurança do Trabalho', 'TI', 'Outro'
+  'Controladoria', 'Financeiro', 'Fiscal', 'Comercial', 'Jurídico', 'TI', 'Editorial', 'Fabricação', 'Logística', 'Marketing', 'Facilities', 'RH' 
 ];
